@@ -55,6 +55,9 @@
                                 </td>
                                 <td>
                                     <code>{{ item.href }}</code>
+                                    {% if not item.is_exported %}
+                                        <span class="status status--warn">(page {{ item.page.status_label }}, skipped in export)</span>
+                                    {% endif %}
                                 </td>
                                 <td class="table__actions">
                                     <div class="row-actions">

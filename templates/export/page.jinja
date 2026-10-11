@@ -12,7 +12,7 @@
             <a href="/index.html"><strong>{{ site_title }}</strong></a>
             {% if header_menu %}
                 <nav aria-label="{{ header_menu.name }}">
-                    {% for item in header_menu.items %}<a href="{{ item.href }}">{{ item.label }}</a>{% endfor %}
+                    {% for item in header_menu.items if item.is_exported %}<a href="{{ item.href }}">{{ item.label }}</a>{% endfor %}
                 </nav>
             {% endif %}
         </header>

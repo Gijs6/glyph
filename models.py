@@ -217,6 +217,10 @@ class MenuItem(db.Model):
     def href(self):
         return self.url if self.url else self.page.href
 
+    @property
+    def is_exported(self):
+        return bool(self.url) or self.page.is_live
+
 
 class Setting(db.Model):
     key = db.Column(db.String(100), primary_key=True)
