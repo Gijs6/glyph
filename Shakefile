@@ -1,0 +1,33 @@
+#!/bin/bash
+FORMAT_HTML=1
+
+setup() {
+  i:venv
+  i:npm_install
+  i:vendor htmx.org/dist/htmx.min.js
+  i:vendor easymde/dist/easymde.min.js
+  i:vendor easymde/dist/easymde.min.css
+}
+
+serve() {
+  i:serve_flask
+}
+
+create_admin() {
+  source .env
+  .venv/bin/python scripts/create_admin.py --email="$ADMIN_SETUP_EMAIL" --password="$ADMIN_SETUP_PASSWORD"
+}
+
+build() {
+  i:build_css
+}
+
+export_site() {
+  .venv/bin/python build.py
+}
+
+deploy() {
+  build
+  i:version
+  g:deploy
+}

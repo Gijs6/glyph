@@ -1,0 +1,4 @@
+name: glyph
+image: gijs6/glyph
+registry: ghcr.io
+host: dec
