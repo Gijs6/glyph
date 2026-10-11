@@ -1,0 +1,33 @@
+{% extends "skeleton.jinja" %}
+
+{% macro nav_link(endpoint, label, section) %}
+    <a href="{{ url_for(endpoint) }}"
+       {% if request.blueprint == section or request.endpoint == section %}aria-current="page"{% endif %}>{{ label }}</a>
+{% endmacro %}
+
+{% block body_content %}
+    <header class="navbar">
+        <div class="navbar__inner">
+            <a href="{{ url_for('index') }}" class="navbar__brand">{% include "mark.svg" %}Glyph</a>
+            {% if is_logged_in() %}
+                <nav class="navbar__links" aria-label="Main">
+                    {{ nav_link('index', 'Dashboard', 'index') }}
+                    {{ nav_link('pages.list_pages', 'Pages', 'pages') }}
+                    {{ nav_link('menus.list_menus', 'Menus', 'menus') }}
+                    {% if current_user() and current_user().is_admin %}
+                        {{ nav_link('admin.index', 'Admin', 'admin') }}
+                    {% endif %}
+                    {{ nav_link('settings.index', 'Settings', 'settings') }}
+                    {{ nav_link('account.index', 'Account', 'account') }}
+                    <form method="post" action="{{ url_for('auth.logout') }}">
+                        <button type="submit">Sign out</button>
+                    </form>
+                </nav>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="page {% block page_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+{% endblock %}

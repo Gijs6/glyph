@@ -1,0 +1,18 @@
+{# djlint:off #}
+{% macro when(value, ago=true) -%}
+    {%- if value is none -%}
+        Never
+    {%- else -%}
+        <time datetime="{{ value | to_iso }}" data-local{% if ago %} data-ago{% endif %}>{{ value | strftime }} UTC{% if ago %} ({{ value | timeago }}){% endif %}</time>
+    {%- endif -%}
+{%- endmacro %}
+{# djlint:on #}
+
+{% macro page_status(page, in_title=false) -%}
+    {%- set tone = " status--ok" if page.status_label == "live" else "" -%}
+    {%- if in_title -%}
+        <span class="status status--title{{ tone }}">({{ page.status_label }})</span>
+    {%- else -%}
+        <span class="status{{ tone }}">{{ page.status_label | capitalize }}</span>
+    {%- endif -%}
+{%- endmacro %}

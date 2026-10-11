@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>{%- block title -%}{%- endblock %} - Glyph</title>
+        <meta name="description"
+              content="A small headless CMS that exports to a static site." />
+        <meta name="theme-color"
+              content="#057d96"
+              media="(prefers-color-scheme: light)" />
+        <meta name="theme-color"
+              content="#01697e"
+              media="(prefers-color-scheme: dark)" />
+
+        <link rel="icon"
+              href="{{ url_for('static', filename='favicon.svg') }}"
+              type="image/svg+xml" />
+        <link rel="alternate icon"
+              href="{{ url_for('static', filename='favicon.ico') }}" />
+        <link rel="manifest"
+              href="{{ url_for('static', filename='manifest.json') }}" />
+
+        <meta name="htmx-config"
+              content='{"historyCacheSize": 0, "responseHandling": [{"code": "204", "swap": false}, {"code": "[234]..", "swap": true}, {"code": "5..", "swap": false, "error": true}]}' />
+
+        {% set theme = "https://cdn.gijs6.nl/theme/v2" %}
+        <link rel="stylesheet" href="{{ theme }}/all.css" />
+        <link rel="stylesheet" href="{{ theme }}/accent/cyan.css" />
+        <link rel="stylesheet"
+              href="{{ url_for('static', filename='vendor/easymde.min.css') }}" />
+        {% if config.DEBUG %}
+            <link rel="stylesheet"
+                  href="{{ url_for('static', filename='styles/app.css') }}" />
+        {% else %}
+            <link rel="stylesheet"
+                  href="{{ url_for('static', filename='styles/app.min.css') }}" />
+        {% endif %}
+
+        <script src="{{ url_for('static', filename='vendor/htmx.min.js') }}" defer></script>
+        <script src="{{ theme }}/js/toast.js" defer></script>
+        <script src="{{ theme }}/js/confirm.js" defer></script>
+        <script src="{{ theme }}/js/dropdown.js" defer></script>
+
+        {% block extra_headers %}{% endblock %}
+    </head>
+
+    <body class="app {% block body_class %}{% endblock %}" hx-boost="true">
+        {% include "_toaster.jinja" %}
+
+        {% block body_content %}{% endblock %}
+
+        {% include "_footer.jinja" %}
+
+        <script src="{{ url_for('static', filename='vendor/easymde.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='scripts/markdown-editor.js') }}"></script>
+        <script src="{{ url_for('static', filename='scripts/block-actions.js') }}"></script>
+        <script>
+            const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            function span(s) {
+                const units = [[60, 1, "second"], [3600, 60, "minute"], [86400, 3600, "hour"], [604800, 86400, "day"], [2629800, 604800, "week"], [31557600, 2629800, "month"], [Infinity, 31557600, "year"]];
+                for (const [limit, size, unit] of units) {
+                    if (s < limit) {
+                        const n = Math.floor(s / size);
+                        return n + " " + unit + (n === 1 ? "" : "s");
+                    }
+                }
+            }
+
+            function absolute(dt) {
+                const pad = (n) => String(n).padStart(2, "0");
+                return dt.getDate() + " " + MONTHS[dt.getMonth()] + " " + dt.getFullYear() + ", " + pad(dt.getHours()) + ":" + pad(dt.getMinutes());
+            }
+
+            function localTimes() {
+                document.querySelectorAll("time[data-local]").forEach(function(el) {
+                    const dt = new Date(el.getAttribute("datetime"));
+                    if (isNaN(dt)) return;
+                    let text = absolute(dt);
+                    if (el.hasAttribute("data-ago")) {
+                        const s = Math.floor((Date.now() - dt) / 1000);
+                        text += " (" + (s < 0 ? "in " + span(-s) : span(s) + " ago") + ")";
+                    }
+                    el.textContent = text;
+                });
+            }
+            localTimes();
+            document.addEventListener("htmx:afterSettle", localTimes);
+        </script>
+    </body>
+</html>
