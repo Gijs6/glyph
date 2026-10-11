@@ -51,7 +51,9 @@ def build():
                 site_title=site_title,
                 site_language=site_language,
             )
-            with open(os.path.join(EXPORT_DIR, f"{page.slug}.html"), "w") as f:
+            target = os.path.join(EXPORT_DIR, f"{page.path}.html")
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            with open(target, "w") as f:
                 f.write(html)
 
             if page.is_homepage:

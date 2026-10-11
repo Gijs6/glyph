@@ -17,7 +17,7 @@
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Slug</th>
+                            <th>Path</th>
                             <th>Updated</th>
                         </tr>
                     </thead>
@@ -28,7 +28,7 @@
                                     <a href="{{ url_for('pages.edit_page', page_id=page.id) }}">{{ page.title }}</a>
                                 </td>
                                 <td>
-                                    <code>{{ page.slug }}</code>
+                                    <code>{{ page.path }}.html</code>
                                 </td>
                                 <td>{{ when(page.updated_at) }}</td>
                             </tr>

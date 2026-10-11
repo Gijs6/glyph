@@ -29,7 +29,7 @@
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Slug</th>
+                            <th>Path</th>
                             <th>Parent</th>
                             <th>Status</th>
                             <th>Updated</th>
@@ -42,7 +42,7 @@
                                     <a href="{{ url_for('pages.edit_page', page_id=page.id) }}">{{ page.title }}</a>
                                 </td>
                                 <td>
-                                    <code>{{ page.slug }}</code>
+                                    <code>{{ page.path }}.html</code>
                                     {% if page.is_homepage %}(homepage){% endif %}
                                 </td>
                                 <td>

@@ -16,8 +16,9 @@
                     New page
                 {% endif %}
             </h1>
-            {% if editing and (page.parent or page.is_homepage) %}
+            {% if editing %}
                 <p class="page-head__sub">
+                    Exported as <code>{{ page.path }}.html</code>.
                     {% if page.parent %}Under {{ page.parent.title }}.{% endif %}
                     {% if page.is_homepage %}This is the homepage.{% endif %}
                 </p>
