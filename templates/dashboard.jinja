@@ -1,0 +1,45 @@
+{% extends "base.jinja" %}
+
+{% from "_macros.jinja" import when %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <h1>Dashboard</h1>
+    </div>
+
+    <section class="panel">
+        <h2 class="panel__heading">Recently updated</h2>
+        {% if recent_pages %}
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for page in recent_pages %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('pages.edit_page', page_id=page.id) }}">{{ page.title }}</a>
+                                </td>
+                                <td>
+                                    <code>{{ page.slug }}</code>
+                                </td>
+                                <td>{{ when(page.updated_at) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty">
+                <p class="empty__title">No pages yet</p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
