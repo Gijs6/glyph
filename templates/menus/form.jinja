@@ -1,0 +1,29 @@
+{% extends "base.jinja" %}
+
+{% block title %}New menu{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <h1>New menu</h1>
+    </div>
+
+    <form method="post" action="{{ url_for('menus.create_menu') }}">
+        <fieldset class="fieldset">
+            <legend>Menu</legend>
+            <div class="field">
+                <label class="field__label" for="name">Name</label>
+                <input type="text"
+                       id="name"
+                       name="name"
+                       placeholder="Header"
+                       value="{{ menu.name if menu else '' }}"
+                       required
+                       autofocus />
+            </div>
+            <div class="form__actions">
+                <button class="btn" type="submit">Add menu</button>
+                <a href="{{ url_for('menus.list_menus') }}" class="btn">Cancel</a>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

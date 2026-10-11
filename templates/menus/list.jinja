@@ -1,0 +1,56 @@
+{% extends "base.jinja" %}
+
+{% block title %}Menus{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <div>
+            <h1>Menus</h1>
+            <p class="page-head__sub">The navigation of your exported site.</p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{{ url_for('menus.new_menu') }}" class="btn">New menu</a>
+        </div>
+    </div>
+
+    {% if menus %}
+        <section class="panel">
+            <h2 class="panel__heading">Menus ({{ menus | length }})</h2>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="table__num">Items</th>
+                            <th class="table__actions">
+                                <span class="visually-hidden">Actions</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for menu in menus %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('menus.edit_menu', menu_id=menu.id) }}">{{ menu.name }}</a>
+                                </td>
+                                <td class="table__num">{{ menu.items.count() }}</td>
+                                <td class="table__actions">
+                                    <form hx-delete="{{ url_for('menus.delete_menu', menu_id=menu.id) }}"
+                                          hx-target="body"
+                                          hx-push-url="true"
+                                          hx-confirm="Delete &quot;{{ menu.name }}&quot;? This can't be undone.">
+                                        <button class="btn btn--sm btn--danger" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <div class="empty">
+            <p class="empty__title">No menus yet</p>
+        </div>
+    {% endif %}
+{% endblock %}

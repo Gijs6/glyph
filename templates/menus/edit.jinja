@@ -1,0 +1,104 @@
+{% extends "base.jinja" %}
+
+{% block title %}{{ menu.name }}{% endblock %}
+
+{% macro target_fields(item, pages) %}
+    <select name="page_id" aria-label="Page">
+        <option value="">Custom URL</option>
+        {% for page in pages %}
+            <option value="{{ page.id }}"
+                    {{ "selected" if item and item.page_id==page.id }}>{{ page.title }}</option>
+        {% endfor %}
+    </select>
+    <input type="text"
+           name="url"
+           placeholder="https://..."
+           aria-label="URL"
+           value="{{ item.url or '' if item else '' }}" />
+{% endmacro %}
+
+{% block content %}
+    <div class="page-head">
+        <h1>{{ menu.name }}</h1>
+    </div>
+
+    {% set items = menu.items.all() %}
+    <section class="panel">
+        <h2 class="panel__heading">Items ({{ items | length }})</h2>
+        {% if items %}
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Target</th>
+                            <th class="table__actions">
+                                <span class="visually-hidden">Actions</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td>
+                                    <form class="item-form"
+                                          method="post"
+                                          action="{{ url_for('menus.update_item', menu_id=menu.id, item_id=item.id) }}">
+                                        <input type="text"
+                                               name="label"
+                                               value="{{ item.label }}"
+                                               aria-label="Label"
+                                               required />
+                                        {{ target_fields(item, pages) }}
+                                        <button class="btn btn--sm" type="submit">Save</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <code>{{ item.href }}</code>
+                                </td>
+                                <td class="table__actions">
+                                    <div class="row-actions">
+                                        <form method="post"
+                                              action="{{ url_for('menus.move_item', menu_id=menu.id, item_id=item.id) }}">
+                                            <input type="hidden" name="direction" value="up" />
+                                            <button class="btn btn--sm" type="submit" {% if loop.first %}disabled{% endif %}>Move up</button>
+                                        </form>
+                                        <form method="post"
+                                              action="{{ url_for('menus.move_item', menu_id=menu.id, item_id=item.id) }}">
+                                            <input type="hidden" name="direction" value="down" />
+                                            <button class="btn btn--sm" type="submit" {% if loop.last %}disabled{% endif %}>Move down</button>
+                                        </form>
+                                        <form hx-delete="{{ url_for('menus.delete_item', menu_id=menu.id, item_id=item.id) }}"
+                                              hx-target="body"
+                                              hx-confirm="Delete &quot;{{ item.label }}&quot;?">
+                                            <button class="btn btn--sm btn--danger" type="submit">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty">
+                <p class="empty__title">No items yet</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <form method="post" action="{{ url_for('menus.add_item', menu_id=menu.id) }}">
+        <fieldset class="fieldset">
+            <legend>Add item</legend>
+            <div class="item-form">
+                <input type="text"
+                       name="label"
+                       placeholder="Label"
+                       aria-label="Label"
+                       required />
+                {{ target_fields(none, pages) }}
+                <button class="btn" type="submit">Add item</button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}
