@@ -1,0 +1,32 @@
+.block {
+    margin: 0 0 1.5rem;
+}
+
+.block--image img {
+    max-width: 100%;
+    height: auto;
+}
+
+.block--image figcaption {
+    margin-top: 0.5rem;
+    color: #6b6b6b;
+    font-size: 0.85rem;
+}
+
+.button {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid #7c3aed;
+    border-radius: 0.25rem;
+    text-decoration: none;
+}
+
+.button--primary {
+    background: #7c3aed;
+    color: #ffffff;
+}
+
+.button--secondary {
+    background: transparent;
+    color: #7c3aed;
+}

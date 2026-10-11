@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="{{ site_language }}">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ page.title }}</title>
+        {% if page.meta_description %}<meta name="description" content="{{ page.meta_description }}" />{% endif %}
+        <link rel="stylesheet" href="/assets/style.css" />
+    </head>
+    <body>
+        <header>
+            <a href="/index.html"><strong>{{ site_title }}</strong></a>
+            {% if header_menu %}
+                <nav aria-label="{{ header_menu.name }}">
+                    {% for item in header_menu.items %}<a href="{{ item.href }}">{{ item.label }}</a>{% endfor %}
+                </nav>
+            {% endif %}
+        </header>
+
+        <main>
+            <h1>{{ page.title }}</h1>
+
+            {% for block in page.blocks %}
+                {% if block.type == "text" %}
+                    <section class="block block--text">{{ block.data.content | markdown }}</section>
+                {% elif block.type == "button" %}
+                    <p class="block block--button">
+                        <a class="button button--{{ block.data.style or 'primary' }}" href="{{ block.data.url }}">{{ block.data.label }}</a>
+                    </p>
+                {% elif block.type == "image" %}
+                    <figure class="block block--image">
+                        <img src="{{ block.data.url }}" alt="{{ block.data.alt or '' }}" />
+                        {% if block.data.caption %}<figcaption>{{ block.data.caption }}</figcaption>{% endif %}
+                    </figure>
+                {% endif %}
+            {% endfor %}
+        </main>
+    </body>
+</html>
