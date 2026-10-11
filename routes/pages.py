@@ -1,9 +1,10 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError
 
-from models import Page, db, now
+from models import MenuItem, Page, db, now
 from utils.auth import current_user
 from utils.blocks import BLOCK_TYPES
+from utils.filters import pluralize_filter as pluralize
 
 pages_bp = Blueprint("pages", __name__, url_prefix="/pages")
 
@@ -173,6 +174,18 @@ def unarchive_page(page_id):
 @pages_bp.delete("/<page_id>")
 def delete_page(page_id):
     page = Page.query.get_or_404(page_id)
+
+    uses = []
+    item_count = MenuItem.query.filter_by(page_id=page.id).count()
+    if item_count:
+        uses.append(f"{item_count} menu {pluralize(item_count, 'item')} {pluralize(item_count, 'links', 'link')} to it")
+    child_count = page.children.count()
+    if child_count:
+        uses.append(f"it has {child_count} child {pluralize(child_count, 'page')}")
+    if uses:
+        flash(f"Can't delete \"{page.title}\": {' and '.join(uses)}. Remove those first.", "error")
+        return redirect(url_for("pages.edit_page", page_id=page.id), code=303)
+
     db.session.delete(page)
     db.session.commit()
     flash("Page deleted.", "success")
