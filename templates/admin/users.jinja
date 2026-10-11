@@ -1,0 +1,60 @@
+{% extends "base.jinja" %}
+
+{% from "_macros.jinja" import when %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <h1>Users</h1>
+        <div class="page-head__actions">
+            <a href="{{ url_for('admin.new_user') }}" class="btn">New user</a>
+        </div>
+    </div>
+
+    <section class="panel">
+        <h2 class="panel__heading">Users ({{ users | length }})</h2>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Email address</th>
+                        <th>Role</th>
+                        <th>Member since</th>
+                        <th class="table__actions">
+                            <span class="visually-hidden">Actions</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ "Admin" if user.is_admin else "User" }}</td>
+                            <td>{{ when(user.created_at, ago=false) }}</td>
+                            <td class="table__actions">
+                                {% if user.id != current_user().id %}
+                                    <div class="row-actions">
+                                        <form method="post" action="{{ url_for('admin.toggle_role', id=user.id) }}">
+                                            <button class="btn btn--sm" type="submit">{{ "Make user" if user.is_admin else "Make admin" }}</button>
+                                        </form>
+                                        <form method="post"
+                                              action="{{ url_for('admin.reset_password', id=user.id) }}"
+                                              data-confirm="Reset the password of {{ user.email }}? Their password stops working and they get an email to set a new one.">
+                                            <button class="btn btn--sm" type="submit">Reset password</button>
+                                        </form>
+                                        <form method="post"
+                                              action="{{ url_for('admin.delete_user', id=user.id) }}"
+                                              data-confirm="Delete {{ user.email }}? This can't be undone.">
+                                            <button class="btn btn--sm btn--danger" type="submit">Delete</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

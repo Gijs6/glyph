@@ -1,0 +1,52 @@
+{% extends "base.jinja" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <div>
+            <h1>Settings</h1>
+            <p class="page-head__sub">Basic settings for your exported site.</p>
+        </div>
+    </div>
+
+    <form method="post" action="{{ url_for('settings.update') }}">
+        <fieldset class="fieldset">
+            <legend>Site</legend>
+            <div class="field">
+                <label class="field__label" for="site_title">Site title</label>
+                <input type="text"
+                       id="site_title"
+                       name="site_title"
+                       value="{{ site_title }}"
+                       required />
+            </div>
+            <div class="field">
+                <label class="field__label" for="header_menu_id">Header menu</label>
+                <select id="header_menu_id" name="header_menu_id">
+                    <option value="">None</option>
+                    {% for menu in menus %}
+                        <option value="{{ menu.id }}"
+                                {{ "selected" if menu.id==header_menu_id }}>{{ menu.name }}</option>
+                    {% endfor %}
+                </select>
+                <p class="field__hint">Shown in the header of your exported site</p>
+            </div>
+            <div class="field field--narrow">
+                <label class="field__label" for="site_language">Site language</label>
+                <select id="site_language" name="site_language">
+                    {% for code, name in languages %}
+                        <option value="{{ code }}"
+                                {{ "selected" if code==site_language }}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <p class="field__hint">
+                    Sets the <code>lang</code> attribute of your exported pages
+                </p>
+            </div>
+            <div class="form__actions">
+                <button class="btn" type="submit">Save settings</button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

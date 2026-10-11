@@ -1,0 +1,34 @@
+{% extends "base.jinja" %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <h1>Admin</h1>
+        <div class="page-head__actions">
+            <a href="{{ url_for('admin.users') }}" class="btn">Manage users</a>
+        </div>
+    </div>
+
+    <section class="panel">
+        <h2 class="panel__heading">Overview</h2>
+        <div class="table-wrap">
+            <table class="table table--kv">
+                <tbody>
+                    <tr>
+                        <th scope="row">Users</th>
+                        <td class="table__num">{{ "{:,}".format(counts.users) }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Pages</th>
+                        <td class="table__num">{{ "{:,}".format(counts.pages) }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Menus</th>
+                        <td class="table__num">{{ "{:,}".format(counts.menus) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}
