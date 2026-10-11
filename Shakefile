@@ -23,7 +23,7 @@ build() {
 }
 
 export_site() {
-  .venv/bin/python build.py
+  .venv/bin/python export_site.py
 }
 
 deploy() {

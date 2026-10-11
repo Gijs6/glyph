@@ -6,5 +6,5 @@ node_modules
 *.min.js
 *.db
 instance
-build
+export/site
 VERSION
