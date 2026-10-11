@@ -1,0 +1,68 @@
+{% extends "base.jinja" %}
+
+{% from "_macros.jinja" import when, page_status %}
+
+{% block title %}{{ "Archived pages" if show_archived else "Pages" }}{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <h1>Pages</h1>
+        <div class="page-head__actions">
+            <a href="{{ url_for('pages.new_page') }}" class="btn">New page</a>
+        </div>
+    </div>
+
+    <nav class="tabs" aria-label="Pages">
+        <a class="tabs__tab"
+           href="{{ url_for('pages.list_pages') }}"
+           {% if not show_archived %}aria-current="page"{% endif %}>Active</a>
+        <a class="tabs__tab"
+           href="{{ url_for('pages.list_pages', archived=1) }}"
+           {% if show_archived %}aria-current="page"{% endif %}>Archived</a>
+    </nav>
+
+    {% if pages %}
+        <section class="panel">
+            <h2 class="panel__heading">{{ "Archived pages" if show_archived else "Pages" }} ({{ pages | length }})</h2>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Parent</th>
+                            <th>Status</th>
+                            <th>Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for page in pages %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('pages.edit_page', page_id=page.id) }}">{{ page.title }}</a>
+                                </td>
+                                <td>
+                                    <code>{{ page.slug }}</code>
+                                    {% if page.is_homepage %}(homepage){% endif %}
+                                </td>
+                                <td>
+                                    {% if page.parent %}
+                                        {{ page.parent.title }}
+                                    {% else %}
+                                        <span aria-hidden="true">-</span><span class="visually-hidden">None</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ page_status(page) }}</td>
+                                <td>{{ when(page.updated_at) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <div class="empty">
+            <p class="empty__title">{{ "No archived pages" if show_archived else "No pages yet" }}</p>
+        </div>
+    {% endif %}
+{% endblock %}

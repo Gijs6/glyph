@@ -1,0 +1,258 @@
+{% extends "base.jinja" %}
+
+{% from "_macros.jinja" import page_status %}
+
+{% set editing = page and page.id %}
+
+{% block title %}{{ "Edit page" if editing else "New page" }}{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <div>
+            <h1>
+                {% if editing %}
+                    {{ page.title }} {{ page_status(page, in_title=true) }}
+                {% else %}
+                    New page
+                {% endif %}
+            </h1>
+            {% if editing and (page.parent or page.is_homepage) %}
+                <p class="page-head__sub">
+                    {% if page.parent %}Under {{ page.parent.title }}.{% endif %}
+                    {% if page.is_homepage %}This is the homepage.{% endif %}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if editing %}
+        <div class="form__actions page-actions">
+            {% if not page.is_homepage %}
+                <form hx-post="{{ url_for('pages.set_homepage', page_id=page.id) }}"
+                      hx-target="body"
+                      hx-push-url="true">
+                    <button class="btn" type="submit">Set as homepage</button>
+                </form>
+            {% endif %}
+            {% if page.is_archived %}
+                <form hx-post="{{ url_for('pages.unarchive_page', page_id=page.id) }}"
+                      hx-target="body"
+                      hx-push-url="true">
+                    <button class="btn" type="submit">Restore page</button>
+                </form>
+            {% else %}
+                <form hx-post="{{ url_for('pages.archive_page', page_id=page.id) }}"
+                      hx-target="body"
+                      hx-push-url="true"
+                      hx-confirm="Archive &quot;{{ page.title }}&quot;?">
+                    <button class="btn" type="submit">Archive page</button>
+                </form>
+            {% endif %}
+            <form hx-delete="{{ url_for('pages.delete_page', page_id=page.id) }}"
+                  hx-target="body"
+                  hx-push-url="true"
+                  hx-confirm="Delete &quot;{{ page.title }}&quot;? This can't be undone.">
+                <button class="btn btn--danger" type="submit">Delete page</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <form {% if editing %} hx-put="{{ url_for('pages.update_page', page_id=page.id) }}" {% else %} hx-post="{{ url_for('pages.create_page') }}" {% endif %}
+          hx-target="body"
+          hx-push-url="true">
+        <fieldset class="fieldset">
+            <legend>Page</legend>
+            <div class="field">
+                <label class="field__label" for="title">Title</label>
+                <input type="text"
+                       id="title"
+                       name="title"
+                       value="{{ page.title if page else '' }}"
+                       required
+                       {% if not editing %}autofocus{% endif %} />
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="slug">Slug</label>
+                <input type="text"
+                       id="slug"
+                       name="slug"
+                       pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                       placeholder="about-us"
+                       value="{{ page.slug if page else '' }}"
+                       required />
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="parent_id">Parent page</label>
+                <select id="parent_id" name="parent_id">
+                    <option value="">None</option>
+                    {% for parent in parents %}
+                        <option value="{{ parent.id }}"
+                                {{ "selected" if page and page.parent_id==parent.id }}>{{ parent.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="meta_description">Meta description</label>
+                <textarea id="meta_description" name="meta_description" rows="2">{{ page.meta_description if page and page.meta_description else '' }}</textarea>
+                <p class="field__hint">Shown in search results</p>
+            </div>
+
+            <div class="field">
+                <label class="field__check">
+                    <input type="checkbox"
+                           id="is_active"
+                           name="is_active"
+                           {% if not page or page.is_active %}checked{% endif %} />
+                    Active
+                </label>
+                <p class="field__hint">Inactive pages aren't exported</p>
+            </div>
+
+            <div class="form__actions">
+                <button class="btn" type="submit">{{ "Save page" if editing else "Add page" }}</button>
+            </div>
+        </fieldset>
+    </form>
+
+    {% if editing %}
+        {% set open_id = request.args.get('open') %}
+        <section class="panel block-builder" id="block-builder">
+            <h2 class="panel__heading">
+                Content
+                <span class="menu-anchor">
+                    <button class="btn btn--sm"
+                            type="button"
+                            data-menu-toggle
+                            aria-haspopup="true"
+                            aria-expanded="false">Add block</button>
+                    <ul class="menu" hidden>
+                        {% for type_key, config in block_types.items() %}
+                            <li>
+                                <form hx-post="{{ url_for('blocks.add_block', page_id=page.id) }}"
+                                      hx-target="#block-builder"
+                                      hx-select="#block-builder"
+                                      hx-swap="outerHTML">
+                                    <input type="hidden" name="type" value="{{ type_key }}" />
+                                    <button type="submit">{{ config.label }}</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </span>
+            </h2>
+
+            {% set blocks = page.blocks.all() %}
+            {% if blocks %}
+                <ol class="list">
+                    {% for block in blocks %}
+                        <li class="list__item">
+                            <details class="block-card"
+                                     id="block-{{ block.id }}"
+                                     {% if open_id==block.id %}open{% else %}hx-preserve="true"{% endif %}>
+                                <summary class="block-card__summary">
+                                    <span class="block-card__title">{{ block_types[block.type].label }}</span>
+                                    <span class="block-card__preview">{{ block | block_preview }}</span>
+                                    <span class="block-card__actions">
+                                        <form hx-post="{{ url_for('blocks.move_block', page_id=page.id, block_id=block.id) }}"
+                                              hx-target="#block-builder"
+                                              hx-select="#block-builder"
+                                              hx-swap="outerHTML">
+                                            <input type="hidden" name="direction" value="up" />
+                                            <button class="btn btn--sm" type="submit" {% if loop.first %}disabled{% endif %}>Move up</button>
+                                        </form>
+                                        <form hx-post="{{ url_for('blocks.move_block', page_id=page.id, block_id=block.id) }}"
+                                              hx-target="#block-builder"
+                                              hx-select="#block-builder"
+                                              hx-swap="outerHTML">
+                                            <input type="hidden" name="direction" value="down" />
+                                            <button class="btn btn--sm" type="submit" {% if loop.last %}disabled{% endif %}>Move down</button>
+                                        </form>
+                                        <form hx-delete="{{ url_for('blocks.delete_block', page_id=page.id, block_id=block.id) }}"
+                                              hx-target="#block-builder"
+                                              hx-select="#block-builder"
+                                              hx-swap="outerHTML"
+                                              hx-confirm="Delete this {{ block_types[block.type].label | lower }} block?">
+                                            <button class="btn btn--sm btn--danger" type="submit">Delete</button>
+                                        </form>
+                                    </span>
+                                </summary>
+                                <div class="block-card__body">
+                                    <form hx-put="{{ url_for('blocks.update_block', page_id=page.id, block_id=block.id) }}"
+                                          hx-target="#block-builder"
+                                          hx-select="#block-builder"
+                                          hx-swap="outerHTML">
+                                        {% if block.type == "text" %}
+                                            <div class="field field--wide">
+                                                <label class="field__label" for="content-{{ block.id }}">Text (Markdown)</label>
+                                                <textarea id="content-{{ block.id }}" name="content" data-markdown-editor>{{ block.data.content }}</textarea>
+                                            </div>
+                                        {% elif block.type == "button" %}
+                                            <div class="field">
+                                                <label class="field__label" for="label-{{ block.id }}">Label</label>
+                                                <input type="text"
+                                                       id="label-{{ block.id }}"
+                                                       name="label"
+                                                       value="{{ block.data.label }}"
+                                                       required />
+                                            </div>
+                                            <div class="field">
+                                                <label class="field__label" for="url-{{ block.id }}">Link</label>
+                                                <input type="text"
+                                                       id="url-{{ block.id }}"
+                                                       name="url"
+                                                       value="{{ block.data.url }}"
+                                                       placeholder="https://... or /slug.html"
+                                                       required />
+                                            </div>
+                                            <div class="field field--narrow">
+                                                <label class="field__label" for="style-{{ block.id }}">Style</label>
+                                                <select id="style-{{ block.id }}" name="style">
+                                                    <option value="primary" {{ "selected" if block.data.style=="primary" }}>Primary</option>
+                                                    <option value="secondary" {{ "selected" if block.data.style=="secondary" }}>Secondary</option>
+                                                </select>
+                                            </div>
+                                        {% elif block.type == "image" %}
+                                            <div class="field">
+                                                <label class="field__label" for="url-{{ block.id }}">Image URL</label>
+                                                <input type="text"
+                                                       id="url-{{ block.id }}"
+                                                       name="url"
+                                                       value="{{ block.data.url }}"
+                                                       placeholder="https://..."
+                                                       required />
+                                            </div>
+                                            <div class="field">
+                                                <label class="field__label" for="alt-{{ block.id }}">Alt text</label>
+                                                <input type="text"
+                                                       id="alt-{{ block.id }}"
+                                                       name="alt"
+                                                       value="{{ block.data.alt }}" />
+                                            </div>
+                                            <div class="field">
+                                                <label class="field__label" for="caption-{{ block.id }}">Caption</label>
+                                                <input type="text"
+                                                       id="caption-{{ block.id }}"
+                                                       name="caption"
+                                                       value="{{ block.data.caption }}" />
+                                            </div>
+                                        {% endif %}
+                                        <div class="form__actions">
+                                            <button class="btn" type="submit">Save block</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </details>
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <div class="empty">
+                    <p class="empty__title">No blocks yet</p>
+                </div>
+            {% endif %}
+        </section>
+    {% endif %}
+{% endblock %}
