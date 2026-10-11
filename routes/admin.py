@@ -1,6 +1,15 @@
 from datetime import datetime, timezone
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from sqlalchemy.exc import IntegrityError
 
 from models import Menu, Page, PasswordResetToken, User, db
@@ -29,7 +38,8 @@ def index():
 @admin_bp.route("/users")
 def users():
     all_users = User.query.order_by(User.created_at.asc()).all()
-    return render_template("admin/users.jinja", users=all_users)
+    reset_link = session.pop("reset_link", None)
+    return render_template("admin/users.jinja", users=all_users, reset_link=reset_link)
 
 
 @admin_bp.route("/users/new", methods=["GET", "POST"])
@@ -68,9 +78,10 @@ def new_user():
     else:
         flash(
             f"User added, but the setup email to {email} couldn't be sent. "
-            "Share the reset link with them yourself.",
+            "Share the link below with them yourself.",
             "error",
         )
+        session["reset_link"] = {"email": user.email, "url": reset_url}
     return redirect(url_for("admin.users"))
 
 
@@ -111,9 +122,10 @@ def reset_password(id):
     else:
         flash(
             f"Password revoked, but the reset email to {user.email} couldn't be sent. "
-            "Share the reset link with them yourself.",
+            "Share the link below with them yourself.",
             "error",
         )
+        session["reset_link"] = {"email": user.email, "url": reset_url}
     return redirect(url_for("admin.users"))
 
 

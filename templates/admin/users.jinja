@@ -4,6 +4,10 @@
 
 {% block title %}Users{% endblock %}
 
+{% block extra_headers %}
+    <script src="{{ url_for('static', filename='scripts/copy-link.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
     <div class="page-head">
         <h1>Users</h1>
@@ -11,6 +15,22 @@
             <a href="{{ url_for('admin.new_user') }}" class="btn">New user</a>
         </div>
     </div>
+
+    {% if reset_link %}
+        <div class="alert alert--warning">
+            <p>
+                The email to {{ reset_link.email }} wasn't sent. Send them this link to set their password. It works once, for 1 hour.
+            </p>
+            <div class="input-row">
+                <input type="text"
+                       id="reset-link"
+                       value="{{ reset_link.url }}"
+                       readonly
+                       aria-label="Password link for {{ reset_link.email }}" />
+                <button type="button" class="btn" data-copy-target="reset-link">Copy link</button>
+            </div>
+        </div>
+    {% endif %}
 
     <section class="panel">
         <h2 class="panel__heading">Users ({{ users | length }})</h2>
