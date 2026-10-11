@@ -1,5 +1,4 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from sqlalchemy.exc import IntegrityError
 
 from models import MenuItem, Page, db, now
 from utils.auth import current_user
@@ -36,11 +35,36 @@ def list_pages():
     return render_template("pages/list.jinja", pages=pages, show_archived=show_archived)
 
 
+def render_form(page, status=200):
+    exclude_id = page.id if page and page.id else None
+    return render_template(
+        "pages/form.jinja",
+        page=page,
+        parents=parent_options(exclude_id=exclude_id),
+        block_types=BLOCK_TYPES,
+    ), status
+
+
+def placement_error(page_id, slug, parent_id):
+    siblings = Page.query.filter_by(slug=slug, parent_id=parent_id)
+    if page_id:
+        siblings = siblings.filter(Page.id != page_id)
+    if siblings.first():
+        return "Another page with this parent already uses that slug. Pick another one."
+
+    seen = set()
+    ancestor = db.session.get(Page, parent_id) if parent_id else None
+    while ancestor is not None and ancestor.id not in seen:
+        if page_id and ancestor.id == page_id:
+            return "A page can't be under one of its own child pages."
+        seen.add(ancestor.id)
+        ancestor = ancestor.parent
+    return None
+
+
 @pages_bp.get("/new")
 def new_page():
-    return render_template(
-        "pages/form.jinja", page=None, parents=parent_options(), block_types=BLOCK_TYPES
-    )
+    return render_form(None)
 
 
 @pages_bp.post("/")
@@ -49,39 +73,24 @@ def create_page():
 
     if not fields["title"] or not fields["slug"]:
         flash("Enter a title and a slug.", "error")
-        page = Page(**fields)
-        return render_template(
-            "pages/form.jinja",
-            page=page,
-            parents=parent_options(),
-            block_types=BLOCK_TYPES,
-        ), 400
+        return render_form(Page(**fields), 400)
 
     page = Page(
         author_id=current_user().id, **{k: v for k, v in fields.items() if k != "slug"}
     )
     try:
         page.slug = fields["slug"]
-        db.session.add(page)
-        db.session.commit()
     except ValueError as e:
-        db.session.rollback()
         flash(str(e), "error")
-        return render_template(
-            "pages/form.jinja",
-            page=page,
-            parents=parent_options(),
-            block_types=BLOCK_TYPES,
-        ), 400
-    except IntegrityError:
-        db.session.rollback()
-        flash("That slug is already in use. Pick another one.", "error")
-        return render_template(
-            "pages/form.jinja",
-            page=page,
-            parents=parent_options(),
-            block_types=BLOCK_TYPES,
-        ), 400
+        return render_form(page, 400)
+
+    error = placement_error(None, page.slug, page.parent_id)
+    if error:
+        flash(error, "error")
+        return render_form(page, 400)
+
+    db.session.add(page)
+    db.session.commit()
 
     flash("Page added.", "success")
     return redirect(url_for("pages.edit_page", page_id=page.id), code=303)
@@ -89,13 +98,7 @@ def create_page():
 
 @pages_bp.get("/<page_id>/edit")
 def edit_page(page_id):
-    page = Page.query.get_or_404(page_id)
-    return render_template(
-        "pages/form.jinja",
-        page=page,
-        parents=parent_options(exclude_id=page.id),
-        block_types=BLOCK_TYPES,
-    )
+    return render_form(Page.query.get_or_404(page_id))
 
 
 @pages_bp.put("/<page_id>")
@@ -105,39 +108,23 @@ def update_page(page_id):
 
     if not fields["title"] or not fields["slug"]:
         flash("Enter a title and a slug.", "error")
-        return render_template(
-            "pages/form.jinja",
-            page=page,
-            parents=parent_options(exclude_id=page.id),
-            block_types=BLOCK_TYPES,
-        ), 400
+        return render_form(page, 400)
 
-    for key, value in fields.items():
-        if key != "slug":
-            setattr(page, key, value)
+    error = placement_error(page.id, fields["slug"], fields["parent_id"])
+    if error:
+        flash(error, "error")
+        return render_form(page, 400)
 
     try:
-        page.slug = fields["slug"]
-        page.updated_at = now()
+        with db.session.no_autoflush:
+            for key, value in fields.items():
+                setattr(page, key, value)
+            page.updated_at = now()
         db.session.commit()
     except ValueError as e:
         db.session.rollback()
         flash(str(e), "error")
-        return render_template(
-            "pages/form.jinja",
-            page=page,
-            parents=parent_options(exclude_id=page.id),
-            block_types=BLOCK_TYPES,
-        ), 400
-    except IntegrityError:
-        db.session.rollback()
-        flash("That slug is already in use. Pick another one.", "error")
-        return render_template(
-            "pages/form.jinja",
-            page=page,
-            parents=parent_options(exclude_id=page.id),
-            block_types=BLOCK_TYPES,
-        ), 400
+        return render_form(Page.query.get_or_404(page_id), 400)
 
     flash("Page saved.", "success")
     return redirect(url_for("pages.edit_page", page_id=page.id), code=303)
@@ -178,12 +165,17 @@ def delete_page(page_id):
     uses = []
     item_count = MenuItem.query.filter_by(page_id=page.id).count()
     if item_count:
-        uses.append(f"{item_count} menu {pluralize(item_count, 'item')} {pluralize(item_count, 'links', 'link')} to it")
+        uses.append(
+            f"{item_count} menu {pluralize(item_count, 'item')} {pluralize(item_count, 'links', 'link')} to it"
+        )
     child_count = page.children.count()
     if child_count:
         uses.append(f"it has {child_count} child {pluralize(child_count, 'page')}")
     if uses:
-        flash(f"Can't delete \"{page.title}\": {' and '.join(uses)}. Remove those first.", "error")
+        flash(
+            f'Can\'t delete "{page.title}": {" and ".join(uses)}. Remove those first.',
+            "error",
+        )
         return redirect(url_for("pages.edit_page", page_id=page.id), code=303)
 
     db.session.delete(page)

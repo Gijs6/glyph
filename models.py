@@ -99,7 +99,7 @@ class Page(db.Model):
         "Page", remote_side=[id], backref=db.backref("children", lazy="dynamic")
     )
 
-    slug = db.Column(db.String(200), unique=True, nullable=False)
+    slug = db.Column(db.String(200), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     meta_description = db.Column(db.String(300), nullable=True)
     is_homepage = db.Column(db.Boolean, default=False, nullable=False)
@@ -136,6 +136,25 @@ class Page(db.Model):
         if not self.is_active:
             return "inactive"
         return "live"
+
+    @property
+    def ancestors(self):
+        chain = []
+        seen = {self.id}
+        page = self.parent
+        while page is not None and page.id not in seen:
+            chain.insert(0, page)
+            seen.add(page.id)
+            page = page.parent
+        return chain
+
+    @property
+    def path(self):
+        return "/".join([page.slug for page in self.ancestors] + [self.slug])
+
+    @property
+    def href(self):
+        return f"/{self.path}.html"
 
     @property
     def is_live(self):
@@ -196,7 +215,7 @@ class MenuItem(db.Model):
 
     @property
     def href(self):
-        return self.url if self.url else f"/{self.page.slug}.html"
+        return self.url if self.url else self.page.href
 
 
 class Setting(db.Model):
