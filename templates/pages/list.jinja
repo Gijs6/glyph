@@ -23,7 +23,9 @@
 
     {% if pages %}
         <section class="panel">
-            <h2 class="panel__heading">{{ "Archived pages" if show_archived else "Pages" }} ({{ pages | length }})</h2>
+            <h2 class="panel__heading">
+            <span>{{ "Archived pages" if show_archived else "Pages" }} <span class="count">{{ "{:,}".format(pages | length) }}</span></span>
+        </h2>
             <div class="table-wrap">
                 <table class="table">
                     <thead>
@@ -46,11 +48,7 @@
                                     {% if page.is_homepage %}(homepage){% endif %}
                                 </td>
                                 <td>
-                                    {% if page.parent %}
-                                        {{ page.parent.title }}
-                                    {% else %}
-                                        <span aria-hidden="true">-</span><span class="visually-hidden">None</span>
-                                    {% endif %}
+                                    {% if page.parent %}{{ page.parent.title }}{% endif %}
                                 </td>
                                 <td>{{ page_status(page) }}</td>
                                 <td>{{ when(page.updated_at) }}</td>

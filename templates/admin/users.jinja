@@ -33,7 +33,9 @@
     {% endif %}
 
     <section class="panel">
-        <h2 class="panel__heading">Users ({{ users | length }})</h2>
+        <h2 class="panel__heading">
+            <span>Users <span class="count">{{ "{:,}".format(users | length) }}</span></span>
+        </h2>
         <div class="table-wrap">
             <table class="table">
                 <thead>

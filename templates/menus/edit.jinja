@@ -24,7 +24,9 @@
 
     {% set items = menu.items.all() %}
     <section class="panel">
-        <h2 class="panel__heading">Items ({{ items | length }})</h2>
+        <h2 class="panel__heading">
+            <span>Items <span class="count">{{ "{:,}".format(items | length) }}</span></span>
+        </h2>
         {% if items %}
             <div class="table-wrap">
                 <table class="table">

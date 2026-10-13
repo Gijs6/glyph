@@ -16,18 +16,26 @@
                     New page
                 {% endif %}
             </h1>
-            {% if editing %}
-                <p class="page-head__sub">
-                    Exported as <code>{{ page.path }}.html</code>.
-                    {% if page.parent %}Under {{ page.parent.title }}.{% endif %}
-                    {% if page.is_homepage %}This is the homepage.{% endif %}
-                </p>
-            {% endif %}
         </div>
     </div>
 
     {% if editing %}
-        <div class="form__actions page-actions">
+        <div class="table-wrap">
+            <table class="table table--kv table--fit">
+                <caption class="visually-hidden">Details</caption>
+                <tbody>
+                    <tr>
+                        <th scope="row">File</th>
+                        <td><code>{{ page.path }}.html</code>{% if page.is_homepage %} <span class="status">(homepage)</span>{% endif %}</td>
+                        {% if page.parent %}<th scope="row">Parent</th><td><a href="{{ url_for('pages.edit_page', page_id=page.parent.id) }}">{{ page.parent.title }}</a></td>{% endif %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if editing %}
+        <div class="page-actions">
             {% if not page.is_homepage %}
                 <form hx-post="{{ url_for('pages.set_homepage', page_id=page.id) }}"
                       hx-target="body"

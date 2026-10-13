@@ -15,7 +15,9 @@
 
     {% if menus %}
         <section class="panel">
-            <h2 class="panel__heading">Menus ({{ menus | length }})</h2>
+            <h2 class="panel__heading">
+            <span>Menus <span class="count">{{ "{:,}".format(menus | length) }}</span></span>
+        </h2>
             <div class="table-wrap">
                 <table class="table">
                     <thead>
