@@ -9,7 +9,7 @@ from models import Page, db
 from routes import register_routes
 from utils.auth import current_user, is_logged_in, sign_in_dev_user
 from utils.filters import register_filters
-from utils.toasts import register_toasts
+from utils.toasts import htmx_redirect, register_toasts
 from utils.version import register_version
 
 load_dotenv(override=True)
@@ -51,12 +51,12 @@ def sync_session_user():
         return
 
     if not is_logged_in():
-        return redirect(url_for("auth.login"))
+        return htmx_redirect(url_for("auth.login"))
 
     user = current_user()
     if not user:
         session.clear()
-        return redirect(url_for("auth.login"))
+        return htmx_redirect(url_for("auth.login"))
 
     last_login = session.get("last_login_time", 0)
     if user.password_revoked_at:
