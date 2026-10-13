@@ -47,7 +47,7 @@
                 <form hx-post="{{ url_for('pages.unarchive_page', page_id=page.id) }}"
                       hx-target="body"
                       hx-push-url="true">
-                    <button class="btn" type="submit">Restore page</button>
+                    <button class="btn" type="submit">Unarchive page</button>
                 </form>
             {% else %}
                 <form hx-post="{{ url_for('pages.archive_page', page_id=page.id) }}"

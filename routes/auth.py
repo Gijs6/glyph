@@ -37,7 +37,6 @@ def login():
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
         sign_in(user)
-        flash(f"Signed in as {user.email}.", "success")
         return redirect(url_for("index"))
 
     flash("Incorrect email address or password.", "error")
@@ -49,7 +48,6 @@ def logout():
     session.clear()
     if current_app.debug:
         session["dev_signed_out"] = True
-    flash("Signed out.", "success")
     return redirect(url_for("auth.login"), code=303)
 
 

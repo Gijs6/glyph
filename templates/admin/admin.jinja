@@ -10,25 +10,19 @@
         </div>
     </div>
 
-    <section class="panel">
-        <h2 class="panel__heading">Overview</h2>
-        <div class="table-wrap">
-            <table class="table table--kv">
-                <tbody>
-                    <tr>
-                        <th scope="row">Users</th>
-                        <td class="table__num">{{ "{:,}".format(counts.users) }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Pages</th>
-                        <td class="table__num">{{ "{:,}".format(counts.pages) }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Menus</th>
-                        <td class="table__num">{{ "{:,}".format(counts.menus) }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
+    <div class="table-wrap">
+        <table class="table table--kv table--fit">
+            <caption class="visually-hidden">Summary</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Users</th>
+                    <td>{{ "{:,}".format(counts.users) }}</td>
+                    <th scope="row">Pages</th>
+                    <td>{{ "{:,}".format(counts.pages) }}</td>
+                    <th scope="row">Menus</th>
+                    <td>{{ "{:,}".format(counts.menus) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

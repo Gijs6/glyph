@@ -154,7 +154,7 @@ def unarchive_page(page_id):
     page = Page.query.get_or_404(page_id)
     page.is_archived = False
     db.session.commit()
-    flash(f'"{page.title}" restored.', "success")
+    flash(f'"{page.title}" unarchived.', "success")
     return redirect(url_for("pages.edit_page", page_id=page.id), code=303)
 
 

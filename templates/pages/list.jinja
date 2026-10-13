@@ -45,7 +45,7 @@
                                 </td>
                                 <td>
                                     <code>{{ page.path }}.html</code>
-                                    {% if page.is_homepage %}(homepage){% endif %}
+                                    {% if page.is_homepage %}<span class="status">(homepage)</span>{% endif %}
                                 </td>
                                 <td>
                                     {% if page.parent %}{{ page.parent.title }}{% endif %}
