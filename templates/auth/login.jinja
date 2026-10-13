@@ -11,7 +11,7 @@
 
     <form method="post" action="{{ url_for('auth.login') }}">
         {% if config.DEBUG %}
-            <p class="muted">Dev mode, so no password is needed.</p>
+            <p class="muted">Dev login</p>
         {% else %}
             <div class="field">
                 <label class="field__label" for="email">Email address</label>
