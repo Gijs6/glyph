@@ -58,38 +58,46 @@
         <script src="{{ url_for('static', filename='vendor/easymde.min.js') }}"></script>
         <script src="{{ url_for('static', filename='scripts/markdown-editor.js') }}"></script>
         <script src="{{ url_for('static', filename='scripts/block-actions.js') }}"></script>
+        <script src="{{ url_for('static', filename='scripts/copy-link.js') }}"></script>
         <script>
-            const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            (function() {
+                if (window.glyphTimes) return;
+                window.glyphTimes = true;
 
-            function span(s) {
-                const units = [[60, 1, "second"], [3600, 60, "minute"], [86400, 3600, "hour"], [604800, 86400, "day"], [2629800, 604800, "week"], [31557600, 2629800, "month"], [Infinity, 31557600, "year"]];
-                for (const [limit, size, unit] of units) {
-                    if (s < limit) {
-                        const n = Math.floor(s / size);
-                        return n + " " + unit + (n === 1 ? "" : "s");
+                const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+                function span(s) {
+                    const units = [[60, 1, "second"], [3600, 60, "minute"], [86400, 3600, "hour"], [604800, 86400, "day"], [2629800, 604800, "week"], [31557600, 2629800, "month"], [Infinity, 31557600, "year"]];
+                    for (const [limit, size, unit] of units) {
+                        if (s < limit) {
+                            const n = Math.floor(s / size);
+                            return n + " " + unit + (n === 1 ? "" : "s");
+                        }
                     }
                 }
-            }
 
-            function absolute(dt) {
-                const pad = (n) => String(n).padStart(2, "0");
-                return dt.getDate() + " " + MONTHS[dt.getMonth()] + " " + dt.getFullYear() + ", " + pad(dt.getHours()) + ":" + pad(dt.getMinutes());
-            }
+                function absolute(dt) {
+                    const pad = (n) => String(n).padStart(2, "0");
+                    return dt.getDate() + " " + MONTHS[dt.getMonth()] + " " + dt.getFullYear() + ", " + pad(dt.getHours()) + ":" + pad(dt.getMinutes());
+                }
 
-            function localTimes() {
-                document.querySelectorAll("time[data-local]").forEach(function(el) {
-                    const dt = new Date(el.getAttribute("datetime"));
-                    if (isNaN(dt)) return;
-                    let text = absolute(dt);
-                    if (el.hasAttribute("data-ago")) {
-                        const s = Math.floor((Date.now() - dt) / 1000);
-                        text += " (" + (s < 0 ? "in " + span(-s) : span(s) + " ago") + ")";
-                    }
-                    el.textContent = text;
-                });
-            }
-            localTimes();
-            document.addEventListener("htmx:afterSettle", localTimes);
+                function localTimes() {
+                    document.querySelectorAll("time[data-local]").forEach(function(el) {
+                        const dt = new Date(el.getAttribute("datetime"));
+                        if (isNaN(dt)) return;
+                        let text = absolute(dt);
+                        if (el.hasAttribute("data-ago")) {
+                            const s = Math.floor((Date.now() - dt) / 1000);
+                            text += " (" + (s < 0 ? "in " + span(-s) : span(s) + " ago") + ")";
+                        }
+                        el.textContent = text;
+                    });
+                }
+
+                localTimes();
+                setInterval(localTimes, 1000);
+                document.addEventListener("htmx:afterSettle", localTimes);
+            })();
         </script>
     </body>
 </html>

@@ -1,4 +1,7 @@
 (function () {
+    if (window.glyphMarkdownEditor) return;
+    window.glyphMarkdownEditor = true;
+
     function button(name, action, text) {
         return { name: name, action: action, text: text, title: text, className: "btn btn--sm" };
     }

@@ -1,4 +1,7 @@
 (function () {
+    if (window.glyphCopyLink) return;
+    window.glyphCopyLink = true;
+
     document.addEventListener("click", function (event) {
         var button = event.target.closest("[data-copy-target]");
         if (!button) return;
