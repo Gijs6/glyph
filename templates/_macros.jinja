@@ -3,7 +3,7 @@
     {%- if value is none -%}
         Never
     {%- else -%}
-        <time datetime="{{ value | to_iso }}" data-local{% if ago %} data-ago{% endif %}>{{ value | strftime }} UTC{% if ago %} ({{ value | timeago }}){% endif %}</time>
+        <time datetime="{{ value | to_iso }}">{{ value | strftime }}</time>{% if ago %} (<time datetime="{{ value | to_iso }}" data-live>{{ value | timeago }}</time>){% endif %}
     {%- endif -%}
 {%- endmacro %}
 {# djlint:on #}

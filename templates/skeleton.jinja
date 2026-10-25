@@ -64,8 +64,6 @@
                 if (window.glyphTimes) return;
                 window.glyphTimes = true;
 
-                const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
                 function span(s) {
                     const units = [[60, 1, "second"], [3600, 60, "minute"], [86400, 3600, "hour"], [604800, 86400, "day"], [2629800, 604800, "week"], [31557600, 2629800, "month"], [Infinity, 31557600, "year"]];
                     for (const [limit, size, unit] of units) {
@@ -76,27 +74,18 @@
                     }
                 }
 
-                function absolute(dt) {
-                    const pad = (n) => String(n).padStart(2, "0");
-                    return dt.getDate() + " " + MONTHS[dt.getMonth()] + " " + dt.getFullYear() + ", " + pad(dt.getHours()) + ":" + pad(dt.getMinutes());
-                }
-
-                function localTimes() {
-                    document.querySelectorAll("time[data-local]").forEach(function(el) {
+                function liveTimes() {
+                    document.querySelectorAll("time[data-live]").forEach(function(el) {
                         const dt = new Date(el.getAttribute("datetime"));
                         if (isNaN(dt)) return;
-                        let text = absolute(dt);
-                        if (el.hasAttribute("data-ago")) {
-                            const s = Math.floor((Date.now() - dt) / 1000);
-                            text += " (" + (s < 0 ? "in " + span(-s) : span(s) + " ago") + ")";
-                        }
-                        el.textContent = text;
+                        const s = Math.floor((Date.now() - dt) / 1000);
+                        el.textContent = s < 0 ? "in " + span(-s) : span(s) + " ago";
                     });
                 }
 
-                localTimes();
-                setInterval(localTimes, 1000);
-                document.addEventListener("htmx:afterSettle", localTimes);
+                liveTimes();
+                setInterval(liveTimes, 1000);
+                document.addEventListener("htmx:afterSettle", liveTimes);
             })();
         </script>
     </body>
