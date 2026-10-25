@@ -8,6 +8,7 @@ from migrations import run_migrations
 from models import Page, db
 from routes import register_routes
 from utils.auth import current_user, is_logged_in, sign_in_dev_user
+from utils.errors import register_errors
 from utils.filters import register_filters
 from utils.toasts import htmx_redirect, register_toasts
 from utils.version import register_version
@@ -21,12 +22,14 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DB_URI", "sqlite:///glyph.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=31)
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = True
 
 db.init_app(app)
 register_filters(app)
 register_routes(app)
 register_toasts(app)
 register_version(app, "cursor")
+register_errors(app, "cursor", user=lambda: session.get("user", {}).get("email"))
 
 with app.app_context():
     db.create_all()
@@ -119,4 +122,5 @@ def internal_server_error(e):
 
 
 if __name__ == "__main__":
+    app.config["SESSION_COOKIE_SECURE"] = False
     app.run(host="0.0.0.0", port=4000, debug=True)
